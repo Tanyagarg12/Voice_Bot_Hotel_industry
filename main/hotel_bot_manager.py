@@ -1,20 +1,16 @@
-import speech_recognition as sr  # For STT (speech-to-text)
-from gtts import gTTS  # For TTS (text-to-speech)
-import pygame  # For playing TTS audio
-import google.generativeai as genai  # For Gemini LLM
-#import sqlite3
+import speech_recognition as sr  
+from gtts import gTTS  
+import pygame  
+import google.generativeai as genai  
 import os
-#import re
 
-# ✅ Configure Gemini API with your key (get it from makersuite.google.com/app/apikey)
-genai.configure(api_key='AIzaSyDW6VeZIZ4B5ICfecPjwSLGfYTmcBEfO38')
+# Gemini API with your key 
+genai.configure(api_key='API_KEY')
 
 for m in genai.list_models():
     print(m.name)
 
 
-
-# Optional: Debug function to list available models
 def list_available_models():
     try:
         models = genai.list_models()
@@ -24,9 +20,7 @@ def list_available_models():
     except Exception as e:
         print(f"Error listing models: {e}")
 
-# list_available_models()  # Uncomment to check available models once
-
-# ✅ Function to get response from Gemini LLM (with fallback)
+# response from Gemini LLM (with fallback)
 model = genai.GenerativeModel("models/gemini-2.5-flash")
 chat = model.start_chat(history=[])
 
@@ -39,7 +33,7 @@ def get_llm_response(user_input):
         return "Sorry, I'm having trouble connecting. Please try again."
     
 
-# ✅ Function to listen for user speech
+# listen for user speech
 def listen():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
@@ -60,7 +54,7 @@ def listen():
             print("No speech detected.")
             return ""
 
-# ✅ Function to convert text to speech and play it
+# text to speech and play it
 def speak(text):
     try:
         pygame.mixer.init()
@@ -75,12 +69,11 @@ def speak(text):
         print(f"TTS error: {e}")
 
 
-# ✅ Main bot loop
+# bot loop
 def main():
     print("Hotel Voice Bot started! Say 'exit' to quit.")
     speak("Hello! I'm your hotel concierge. How can I help you today?")
-    chat.history = []  # clear conversation memory on start
-    #booking_info = {}
+    chat.history = []  
 
     while True:
         user_input = listen().lower().strip()

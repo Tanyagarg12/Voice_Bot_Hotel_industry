@@ -6,13 +6,13 @@ import time
 import google.api_core.exceptions
 
 # -----------------------------
-# 🔧 CONFIG
+# CONFIG
 # -----------------------------
-genai.configure(api_key="AIzaSyBm4ChTdSFF_mZW4gGpLBo_WE8zHovxjBk")  # 🔑 Replace with your Gemini key
+genai.configure(api_key="API_KEY")  
 model = genai.GenerativeModel("models/gemini-2.5-flash")
 
 # -----------------------------
-# 🔊 Text-to-Speech
+# Text-to-Speech
 # -----------------------------
 def speak(text):
     """Speaks a given text using pyttsx3 safely."""
@@ -21,14 +21,13 @@ def speak(text):
         engine.say(text)
         engine.runAndWait()
     except RuntimeError:
-        # Handle 'run loop already started' error
         time.sleep(1)
         engine = pyttsx3.init()
         engine.say(text)
         engine.runAndWait()
 
 # -----------------------------
-# 🎙️ Voice Input
+# Voice Input
 # -----------------------------
 def listen():
     """Listen from mic and return recognized speech."""
@@ -48,14 +47,13 @@ def listen():
         return ""
 
 # -----------------------------
-# 💬 Safe Gemini Message Send
+# Safe Gemini Message Send
 # -----------------------------
 def safe_send_message(text):
     """Send message with retry on 429 error."""
     retries = 3
     for i in range(retries):
         try:
-            # Use the existing chat session from state
             return st.session_state.chat.send_message(text).text
         except google.api_core.exceptions.ResourceExhausted:
             if i < retries - 1:
@@ -66,7 +64,7 @@ def safe_send_message(text):
                 return "Sorry, the system is busy right now. Please try again in a minute."
 
 # -----------------------------
-# 🧠 Initialize Session
+# Initialize Session
 # -----------------------------
 if "conversation" not in st.session_state:
     st.session_state.conversation = []
@@ -78,14 +76,14 @@ st.set_page_config(page_title="Hotel Voice Bot", page_icon="🏨")
 st.title("🏨 Hotel Voice Bot")
 
 # -----------------------------
-# 🗨️ Chat Display
+# Chat Display
 # -----------------------------
 for message in st.session_state.conversation:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # -----------------------------
-# 👋 Greet User Initially
+# Greet User Initially
 # -----------------------------
 if not st.session_state.started:
     greeting = "Hello! Welcome to Hotel Assistant. How can I help you today? You can speak or type your message below."
@@ -96,7 +94,7 @@ if not st.session_state.started:
     st.session_state.started = True
 
 # -----------------------------
-# 🔄 Handle Auto-Listen Response
+# Handle Auto-Listen Response
 # -----------------------------
 if st.session_state.auto_listen:
     st.write("🎤 Auto listening for your reply...")
@@ -104,12 +102,8 @@ if st.session_state.auto_listen:
     if auto_text:
         st.session_state.conversation.append({"role": "user", "content": auto_text})
         st.chat_message("user").markdown(auto_text)
-        
-        # Get LLM Response
         reply = safe_send_message(auto_text)
         st.session_state.conversation.append({"role": "assistant", "content": reply})
-        
-        # Typing animation
         with st.chat_message("assistant"):
             placeholder = st.empty()
             full_response = ""
@@ -120,19 +114,18 @@ if st.session_state.auto_listen:
             placeholder.markdown(full_response)
         
         speak(reply)
-        # Set auto_listen again for next turn
         st.session_state.auto_listen = True
         st.rerun()
     else:
         st.session_state.auto_listen = False
 
 # -----------------------------
-# 💬 Text Input Box
+# Text Input Box
 # -----------------------------
 user_input = st.text_input("💬 Type your message and press Enter:")
 
 # -----------------------------
-# 🎤 Voice and Restart Buttons
+# Voice and Restart Buttons
 # -----------------------------
 col1, col2 = st.columns(2)
 with col1:
@@ -150,17 +143,13 @@ with col2:
         st.rerun()
 
 # -----------------------------
-# 🤖 Process User Input (Manual or Voice)
+# Process User Input (Manual or Voice)
 # -----------------------------
 if user_input and not st.session_state.auto_listen:
     st.session_state.conversation.append({"role": "user", "content": user_input})
     st.chat_message("user").markdown(user_input)
-
-    # Get LLM Response
     reply = safe_send_message(user_input)
     st.session_state.conversation.append({"role": "assistant", "content": reply})
-
-    # Typing animation
     with st.chat_message("assistant"):
         placeholder = st.empty()
         full_response = ""
@@ -171,7 +160,5 @@ if user_input and not st.session_state.auto_listen:
         placeholder.markdown(full_response)
 
     speak(reply)
-    
-    # Set flag for auto listening
     st.session_state.auto_listen = True
     st.rerun()
